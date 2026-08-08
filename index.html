@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Email Assistant</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<style>
+    * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f7fb;
+    color: #1f2937;
+}
+
+
+/* HEADER */
+
+header {
+    background: #111827;
+    color: white;
+    padding: 20px 6%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.header-text {
+    color: #cbd5e1;
+}
+
+
+/* MAIN */
+
+main {
+    width: 90%;
+    max-width: 1400px;
+    margin: 30px auto;
+
+    display: grid;
+    grid-template-columns: 40% 60%;
+    gap: 25px;
+}
+
+
+/* EMAIL SECTION */
+
+.email-section {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    height: fit-content;
+
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.section-title {
+    margin-bottom: 20px;
+}
+
+.section-title h2 {
+    margin-bottom: 8px;
+}
+
+.section-title p {
+    color: #64748b;
+}
+
+
+textarea {
+    width: 100%;
+    min-height: 300px;
+
+    padding: 15px;
+
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+
+    resize: vertical;
+
+    font-size: 15px;
+    font-family: inherit;
+
+    outline: none;
+}
+
+textarea:focus {
+    border-color: #6366f1;
+}
+
+
+/* BUTTONS */
+
+.buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+button {
+    border: none;
+    padding: 12px 18px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.analyze-btn {
+    background: #4f46e5;
+    color: white;
+}
+
+.sample-btn {
+    background: #0f766e;
+    color: white;
+}
+
+.clear-btn {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+.copy-btn {
+    background: #111827;
+    color: white;
+    margin-top: 10px;
+}
+
+
+/* RESULTS */
+
+.result-section h2 {
+    margin-bottom: 20px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+
+    border-radius: 12px;
+
+    margin-bottom: 18px;
+
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+.card h3 {
+    margin-bottom: 12px;
+}
+
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 15px;
+}
+
+
+.badge {
+    display: inline-block;
+
+    padding: 7px 12px;
+
+    border-radius: 20px;
+
+    background: #e5e7eb;
+
+    font-size: 13px;
+    font-weight: bold;
+
+    margin-bottom: 8px;
+}
+
+
+ul {
+    padding-left: 20px;
+}
+
+li {
+    margin-bottom: 8px;
+}
+
+
+/* REPLY */
+
+#reply {
+    min-height: 150px;
+}
+
+
+/* LOADING */
+
+.loading {
+    display: none;
+
+    background: white;
+
+    padding: 20px;
+
+    border-radius: 10px;
+
+    margin-bottom: 15px;
+
+    text-align: center;
+}
+
+
+/* FOOTER */
+
+footer {
+    text-align: center;
+
+    padding: 25px;
+
+    color: #64748b;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 900px) {
+
+    main {
+        grid-template-columns: 1fr;
+    }
+
+    header {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+
+@media (max-width: 500px) {
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    main {
+        width: 95%;
+    }
+}
+</style>
+<body>
+
+<header>
+    <div class="logo">
+        🤖 AI MailMate
+    </div>
+
+    <div class="header-text">
+        Intelligent Email Assistant
+    </div>
+</header>
+
+
+<main>
+
+    <!-- LEFT SIDE -->
+
+    <section class="email-section">
+
+        <div class="section-title">
+            <h2>📧 Email Analyzer</h2>
+            <p>Paste an email and let AI analyze it.</p>
+        </div>
+
+
+        <textarea
+            id="emailInput"
+            placeholder="Paste your email here..."></textarea>
+
+
+        <div class="buttons">
+
+            <button class="analyze-btn" onclick="analyzeEmail()">
+                🤖 Analyze Email
+            </button>
+
+            <button class="sample-btn" onclick="loadSample()">
+                🧪 Load Sample
+            </button>
+
+            <button class="clear-btn" onclick="clearEmail()">
+                🗑 Clear
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- RIGHT SIDE -->
+
+    <section class="result-section">
+
+        <h2>📊 AI Analysis</h2>
+
+        <div id="loading" class="loading">
+            Analyzing email...
+        </div>
+
+
+        <div id="results">
+
+            <!-- SUMMARY -->
+
+            <div class="card summary-card">
+
+                <h3>📝 Summary</h3>
+
+                <p id="summary">
+                    Your email summary will appear here.
+                </p>
+
+            </div>
+
+
+            <!-- STATUS -->
+
+            <div class="grid">
+
+                <div class="card">
+
+                    <h3>🚨 Priority</h3>
+
+                    <span id="priority"
+                          class="badge">
+                        -
+                    </span>
+
+                    <p id="priorityReason"></p>
+
+                </div>
+
+
+                <div class="card">
+
+                    <h3>📂 Category</h3>
+
+                    <span id="category"
+                          class="badge">
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="card">
+
+                    <h3>🛡️ Spam Risk</h3>
+
+                    <span id="spamRisk"
+                          class="badge">
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="card">
+
+                    <h3>😊 Sentiment</h3>
+
+                    <span id="sentiment"
+                          class="badge">
+                        -
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- TASKS -->
+
+            <div class="card">
+
+                <h3>✅ Tasks</h3>
+
+                <ul id="tasks">
+                    <li>No tasks yet</li>
+                </ul>
+
+            </div>
+
+
+            <!-- DEADLINES -->
+
+            <div class="card">
+
+                <h3>📅 Deadlines</h3>
+
+                <ul id="deadlines">
+                    <li>No deadlines yet</li>
+                </ul>
+
+            </div>
+
+
+            <!-- REPLY -->
+
+            <div class="card">
+
+                <h3>🤖 Smart Reply</h3>
+
+                <textarea id="reply"></textarea>
+
+                <button
+                    class="copy-btn"
+                    onclick="copyReply()">
+                    📋 Copy Reply
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer>
+    AI MailMate © 2026 | AI-powered productivity assistant
+</footer>
+
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+<script>
+    const sampleEmail = `
+Dear Student,
+
+Your project presentation has been scheduled for 12 August at 10:00 AM.
+
+Please submit your final project report before 10 August.
+Attendance is mandatory.
+
+Thank you.
+`;
+
+
+function loadSample() {
+
+    document.getElementById("emailInput").value = sampleEmail;
+
+}
+
+
+function clearEmail() {
+
+    document.getElementById("emailInput").value = "";
+
+    document.getElementById("summary").innerText =
+        "Your email summary will appear here.";
+
+    document.getElementById("priority").innerText = "-";
+
+    document.getElementById("category").innerText = "-";
+
+    document.getElementById("spamRisk").innerText = "-";
+
+    document.getElementById("sentiment").innerText = "-";
+
+    document.getElementById("priorityReason").innerText = "";
+
+    document.getElementById("reply").value = "";
+
+    document.getElementById("tasks").innerHTML =
+        "<li>No tasks yet</li>";
+
+    document.getElementById("deadlines").innerHTML =
+        "<li>No deadlines yet</li>";
+}
+
+
+async function analyzeEmail() {
+
+    const email =
+        document.getElementById("emailInput").value.trim();
+
+
+    if (!email) {
+
+        alert("Please enter an email first.");
+
+        return;
+    }
+
+
+    const loading =
+        document.getElementById("loading");
+
+    loading.style.display = "block";
+
+
+    try {
+
+        const response = await fetch("/analyze", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                email: email
+            })
+
+        });
+
+
+        const data = await response.json();
+
+
+        if (data.error) {
+
+            alert(data.error);
+
+            return;
+        }
+
+
+        // SUMMARY
+
+        document.getElementById("summary").innerText =
+            data.summary;
+
+
+        // PRIORITY
+
+        document.getElementById("priority").innerText =
+            data.priority;
+
+
+        document.getElementById("priorityReason").innerText =
+            data.priority_reason;
+
+
+        // CATEGORY
+
+        document.getElementById("category").innerText =
+            data.category;
+
+
+        // SPAM
+
+        document.getElementById("spamRisk").innerText =
+            data.spam_risk;
+
+
+        // SENTIMENT
+
+        document.getElementById("sentiment").innerText =
+            data.sentiment;
+
+
+        // TASKS
+
+        const taskList =
+            document.getElementById("tasks");
+
+        taskList.innerHTML = "";
+
+        data.tasks.forEach(task => {
+
+            const li = document.createElement("li");
+
+            li.innerText = task;
+
+            taskList.appendChild(li);
+
+        });
+
+
+        // DEADLINES
+
+        const deadlineList =
+            document.getElementById("deadlines");
+
+        deadlineList.innerHTML = "";
+
+        data.deadlines.forEach(deadline => {
+
+            const li = document.createElement("li");
+
+            li.innerText = deadline;
+
+            deadlineList.appendChild(li);
+
+        });
+
+
+        // REPLY
+
+        document.getElementById("reply").value =
+            data.reply;
+
+
+    }
+
+    catch (error) {
+
+        alert(
+            "Something went wrong. Please try again."
+        );
+
+        console.error(error);
+
+    }
+
+    finally {
+
+        loading.style.display = "none";
+
+    }
+
+}
+
+
+function copyReply() {
+
+    const reply =
+        document.getElementById("reply").value;
+
+
+    if (!reply) {
+
+        alert("No reply available.");
+
+        return;
+    }
+
+
+    navigator.clipboard.writeText(reply)
+
+        .then(() => {
+
+            alert("Reply copied!");
+
+        });
+
+}
+</script>
+
+</html>
